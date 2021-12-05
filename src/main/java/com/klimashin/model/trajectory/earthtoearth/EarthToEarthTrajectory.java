@@ -1,5 +1,6 @@
 package com.klimashin.model.trajectory.earthtoearth;
 
+import com.klimashin.model.trajectory.TrajectoryVariables;
 import lombok.Getter;
 import lombok.Setter;
 import com.klimashin.model.entity.Spacecraft;
@@ -40,7 +41,7 @@ public class EarthToEarthTrajectory {
     }
 
     public void calculateFullTrajectory(Point3D startEarthPosition, Point3D startSpacecraftPosition,
-                                        Vector3D startSpacecraftSpeed) {
+                                        Vector3D startSpacecraftSpeed, TrajectoryVariables trajectoryVariables) {
         earth.setAcceleration(new Vector3D());
         earth.setSpeed(new Vector3D());
         earth.setPosition(startEarthPosition);
@@ -88,10 +89,26 @@ public class EarthToEarthTrajectory {
             distance = Point3D.distanceBetweenPoints(earth.getPosition(), spacecraft.getPosition());
 
             writeInLists(earth, spacecraft, distance);
+
+            if(trajectoryVariables.equals(TrajectoryVariables.FULL)) {
+
+            }
+
+            if(trajectoryVariables.equals(TrajectoryVariables.MAIN_PART)) {
+                if(distance <= earth.getGravitationalRadius()) {
+                    break;
+                }
+            }
+
+            if(trajectoryVariables.equals(TrajectoryVariables.CALCULATION)) {
+                if(distance <= earth.getGravitationalRadius() & t <= angleAndTimeParameters.getFirstPartDuration()) {
+                    break;
+                }
+            }
         }
 
     }
-
+/*
     public void calculateMainPartTrajectory(Point3D startEarthPosition, Point3D startSpacecraftPosition,
                                         Vector3D startSpacecraftSpeed) {
         earth.setAcceleration(new Vector3D());
@@ -148,7 +165,7 @@ public class EarthToEarthTrajectory {
         }
 
     }
-
+*/
     private void writeInLists(Earth earth, Spacecraft spacecraft, double distance) {
         earthPosition.add(earth.getPosition());
         earthSpeed.add(earth.getSpeed());

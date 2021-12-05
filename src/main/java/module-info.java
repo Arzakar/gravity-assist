@@ -1,13 +1,19 @@
 module com.klimashin {
 
     requires lombok;
+
     requires javafx.base;
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
 
-    exports com.klimashin;
+    requires java.logging;
 
-    opens com.klimashin to javafx.graphics;
+    exports com.klimashin;
+    exports com.klimashin.controller;
+
+    opens com.klimashin to javafx.fxml;
+    opens com.klimashin.controller to javafx.fxml;
+
 
 }
