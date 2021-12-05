@@ -1,0 +1,10 @@
+package ru.klimashin.ballistic
+
+import javafx.scene.layout.AnchorPane
+import ru.klimashin.ballistic.SampleController
+
+component Sample controlledby SampleController {
+	AnchorPane {
+		//TODO Add Nodes
+	}
+}
