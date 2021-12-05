@@ -1,41 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.klimashin.controller.SolutionSearchAlgorithm">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" styleClass="anchor-pane" stylesheets="@SolutionSearchAlgorithm.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.klimashin.controller.SolutionSearchAlgorithm">
    <children>
-      <VBox layoutX="64.0" layoutY="66.0" prefHeight="200.0" prefWidth="226.0">
+      <VBox layoutX="64.0" layoutY="66.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
-            <Label text="Парметры КА" />
-            <GridPane>
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="label-head" text="Парметры КА">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font></Label>
+            <GridPane hgap="15.0" maxHeight="-Infinity" maxWidth="-Infinity">
                <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="163.0" minWidth="10.0" prefWidth="141.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="108.0" minWidth="10.0" prefWidth="85.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="0.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" />
                </columnConstraints>
                <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <Label text="Имя" />
-                  <TextField GridPane.columnIndex="1" />
-                  <Label text="Масса" GridPane.rowIndex="1" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <Label text="Тяга двигателя" GridPane.rowIndex="2" />
-                  <Label text="Колическтво двигателей" GridPane.rowIndex="3" />
+                  <Label text="Масса" />
+                  <TextField fx:id="textFieldMass" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" promptText="350" GridPane.columnIndex="1" />
+                  <Label text="Диапазон тяги двигателя" GridPane.rowIndex="1" />
+                  <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <children>
+                        <Label text="от" />
+                        <TextField fx:id="textFieldThrustFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0.090" />
+                        <Label text="до" />
+                        <TextField fx:id="textFieldThrustTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0.210" />
+                        <Label text="шаг" />
+                        <TextField fx:id="textFieldThrustStep" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0.010" />
+                     </children>
+                  </HBox>
+                  <Label text="кг" GridPane.columnIndex="2" />
+                  <Label text="Н" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <Label text="дней" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                  <Label maxWidth="160.0" text="Диапазон длительности" wrapText="true" GridPane.rowIndex="3" />
+                  <Label maxWidth="160.0" text="Диапазон длительности" wrapText="true" GridPane.rowIndex="6" />
+                  <Label text="дней" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                  <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                     <children>
+                        <Label text="от" />
+                        <TextField fx:id="textFieldFirstPartTimeFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0" />
+                        <Label text="до" />
+                        <TextField fx:id="textFieldFirstPartTimeTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="180" />
+                        <Label text="шаг" />
+                        <TextField fx:id="textFieldFirstPartTimeStep" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="10" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                     <children>
+                        <Label text="от" />
+                        <TextField fx:id="textFieldSecondPartTimeFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0" />
+                        <Label text="до" />
+                        <TextField fx:id="textFieldSecondPartTimeTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="180" />
+                        <Label text="шаг" />
+                        <TextField fx:id="textFieldSecondPartTimeStep" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="10" />
+                     </children>
+                  </HBox>
+                  <Label maxWidth="160.0" text="Диапазон угла тяги" wrapText="true" GridPane.rowIndex="4" />
+                  <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                     <children>
+                        <Label text="от" />
+                        <TextField fx:id="textFieldFirstPartAngleFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="-180" />
+                        <Label text="до" />
+                        <TextField fx:id="textFieldFirstPartAngleTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="180" />
+                        <Label text="шаг" />
+                        <TextField fx:id="textFieldFirstPartAngleStep" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="30" />
+                     </children>
+                  </HBox>
+                  <Label styleClass="label-subhead" text="Первый участок" GridPane.rowIndex="2" />
+                  <Label styleClass="label-subhead" text="Второй участок" GridPane.rowIndex="5" />
+                  <Label maxWidth="160.0" text="Диапазон угла тяги" wrapText="true" GridPane.rowIndex="7" />
+                  <Label text="град" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                  <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                     <children>
+                        <Label text="от" />
+                        <TextField fx:id="textFieldSecondPartAngleFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="-180" />
+                        <Label text="до" />
+                        <TextField fx:id="textFieldSecondPartAngleTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="180" />
+                        <Label text="шаг" />
+                        <TextField fx:id="textFieldSecondPartAngleStep" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="30" />
+                     </children>
+                  </HBox>
+                  <Label text="град" GridPane.columnIndex="2" GridPane.rowIndex="7" />
                </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
             </GridPane>
+            <Button fx:id="buttonStartCalculate" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Провести поиск">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <VBox.margin>
+                  <Insets left="20.0" right="20.0" />
+               </VBox.margin>
+            </Button>
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="label-head" text="Найденные подходящие параметры">
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </Label>
+            <TextArea fx:id="textAreaResultLog" />
          </children>
       </VBox>
    </children>
