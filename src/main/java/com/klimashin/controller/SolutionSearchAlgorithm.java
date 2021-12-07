@@ -3,14 +3,19 @@ package com.klimashin.controller;
 import com.klimashin.model.entity.Engine;
 import com.klimashin.model.entity.Spacecraft;
 import com.klimashin.model.entity.celestial.Earth;
+import com.klimashin.model.trajectory.TrajectoryVariables;
+import com.klimashin.model.trajectory.earthtoearth.EarthToEarthTrajectory;
+import com.klimashin.model.util.AngleAndTimeParameters;
+import com.klimashin.model.util.math.GeneralFormulas;
+import com.klimashin.model.util.math.Point3D;
+import com.klimashin.model.util.math.Vector3D;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import lombok.extern.java.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Log
@@ -22,23 +27,152 @@ public class SolutionSearchAlgorithm {
             return;
         }
 
-        Spacecraft spacecraft = new Spacecraft("Expiremental",
+        Spacecraft spacecraft = new Spacecraft("Experimental",
                 Double.valueOf(textFieldMass.getText()),
                 new Engine("Experimental", 0d),
                 1, null, null,null);
 
+        AngleAndTimeParameters parameters = new AngleAndTimeParameters(0, 100, 0, 0, 0, 0);
 
+        double thrustCurrent = Double.valueOf(textFieldThrustFrom.getText());
+        double thrustTo = Double.valueOf(textFieldThrustTo.getText());
+        double thrustStep = Double.valueOf(textFieldThrustStep.getText());
+
+        int firstPartTimeFrom = Integer.valueOf(textFieldFirstPartTimeFrom.getText());
+        int firstPartTimeTo = Integer.valueOf(textFieldFirstPartTimeTo.getText());
+        int firstPartTimeStep = Integer.valueOf(textFieldFirstPartTimeStep.getText());
+
+        int secondPartTimeFrom = Integer.valueOf(textFieldSecondPartTimeFrom.getText());
+        int secondPartTimeTo = Integer.valueOf(textFieldSecondPartTimeTo.getText());
+        int secondPartTimeStep = Integer.valueOf(textFieldSecondPartTimeStep.getText());
+
+        int firstPartAngleFrom = Integer.valueOf(textFieldFirstPartAngleFrom.getText());
+        int firstPartAngleTo = Integer.valueOf(textFieldFirstPartAngleTo.getText());
+        int firstPartAngleStep = Integer.valueOf(textFieldFirstPartAngleStep.getText());
+
+        int secondPartAngleFrom = Integer.valueOf(textFieldSecondPartAngleFrom.getText());
+        int secondPartAngleTo = Integer.valueOf(textFieldSecondPartAngleTo.getText());
+        int secondPartAngleStep = Integer.valueOf(textFieldSecondPartAngleStep.getText());
+
+        double spacecraftAnglePosition = Math.toRadians(Double.valueOf(textFieldSpacecraftPosition.getText()));
+        double spacecraftSpeed = Double.valueOf(textFieldSpacecraftSpeed.getText());
+        double minDistance = Double.valueOf(textFieldMinDistance.getText());
+
+        int sumOperation = (int) ((firstPartTimeTo - firstPartTimeFrom) / firstPartTimeStep + 1);
+        sumOperation *= (int) ((secondPartTimeTo - secondPartTimeFrom) / secondPartTimeStep + 1);
+        sumOperation *= (int) ((firstPartAngleTo - firstPartAngleFrom) / firstPartAngleStep + 1);
+        sumOperation *= (int) ((secondPartAngleTo - secondPartAngleFrom) / secondPartAngleStep + 1);
+        sumOperation *= (int) ((thrustTo - thrustCurrent) / thrustStep + 1);
+
+        final int finalSumOperation = sumOperation;
+
+        final Earth EARTH_PARAMETERS = new Earth();
+
+        new Thread(() -> {
+            int currentOperation = 0;
+            List<StringBuilder> results = new ArrayList<>();
+
+            while(thrustCurrent <= thrustTo) {
+                List<AngleAndTimeParameters> failureParameters = new ArrayList<>();
+                List<AngleAndTimeParameters> alreadyCompletedParameters = new ArrayList<>();
+
+                for(int firstPartTime = firstPartTimeFrom; firstPartTime <= firstPartTimeTo; firstPartTime += firstPartTimeStep) {
+                    parameters.setFirstPartDuration((int) GeneralFormulas.daysToSeconds(firstPartTime));
+
+                    for(int secondPartTime = secondPartTimeFrom; secondPartTime <= secondPartTimeTo; secondPartTime += secondPartTimeStep) {
+                        parameters.setSecondPartDuration((int) GeneralFormulas.daysToSeconds(secondPartTime));
+
+                        for(int firstPartAngle = firstPartAngleFrom; firstPartAngle <= firstPartAngleTo; firstPartAngle += firstPartAngleStep) {
+                            parameters.setFirstTrustAngle(Math.toRadians(firstPartAngle));
+
+                            boolean needBreak = false;
+                            for(AngleAndTimeParameters p : failureParameters) {
+                                if(p.getFirstTrustAngle() == firstPartAngle) {
+                                    needBreak = true;
+                                }
+                            }
+
+                            if(needBreak) {
+                                currentOperation += (secondPartAngleTo - secondPartAngleFrom) * secondPartAngleStep + 1;
+                                break;
+                            }
+
+                            for(int secondPartAngle = secondPartAngleFrom; secondPartAngle <= secondPartAngleTo; secondPartAngle += secondPartAngleStep) {
+                                parameters.setSecondThrustAngle(Math.toRadians(secondPartAngle));
+
+                                EarthToEarthTrajectory trajectory = new EarthToEarthTrajectory(spacecraft, parameters);
+
+                                Point3D startEarthPosition = new Point3D(EARTH_PARAMETERS.getOrbitRadius(), 0, 0);
+                                trajectory.getEarth().setPosition(startEarthPosition);
+
+                                Point3D startSpacecraftPosition = new Point3D(trajectory.getEarth().getPosition());
+                                startSpacecraftPosition.setX(startSpacecraftPosition.getX()
+                                        + EARTH_PARAMETERS.getOrbitRadius() * Math.cos(spacecraftAnglePosition));
+                                startSpacecraftPosition.setY(startSpacecraftPosition.getY()
+                                        + EARTH_PARAMETERS.getOrbitRadius() * Math.sin(spacecraftAnglePosition));
+
+                                trajectory.calculateTrajectory(startEarthPosition, startSpacecraftPosition,
+                                        new Vector3D(0, spacecraftSpeed, 0), TrajectoryVariables.CALCULATION);
+
+                                if(trajectory.getSpacecraftPosition().size() <= firstPartTime / parameters.getDeltaTime()) {
+                                    AngleAndTimeParameters failure = parameters;
+                                    failure.setFirstPartDuration(firstPartTime);
+                                    failure.setFirstTrustAngle(firstPartAngle);
+                                    failure.setSecondPartDuration(secondPartTime);
+                                    failure.setSecondThrustAngle(secondPartAngle);
+
+                                    failureParameters.add(failure);
+
+                                    currentOperation++;
+
+                                    break;
+                                }
+
+                                List<Double> distanceList = new ArrayList<>();
+                                distanceList.addAll(trajectory.getDistanceToEarth());
+                                Collections.sort(distanceList);
+
+                                if(distanceList.get(0) < minDistance) {
+                                    StringBuilder result = new StringBuilder(String.format("%.3d", thrustCurrent) + " "
+                                            + String.format("%3d", firstPartTime) + " "
+                                            + String.format("%3d", secondPartTime) + " "
+                                            + String.format("%4d", firstPartAngle) + " "
+                                            + String.format("%4d", secondPartAngle) + " "
+                                            + String.format("%13.2f", distanceList.get(0)) + "\n");
+
+                                    results.add(result);
+                                }
+
+                                currentOperation++;
+
+                                final int finalCurrentOperation = currentOperation;
+                                final int finalFirstPartTime = firstPartTime;
+                                final double finalFirstPartAngle = firstPartAngle;
+                                final int finalSecondPartTime = secondPartTime;
+                                final double finalSecondPartAngle = secondPartAngle;
+
+                                Platform.runLater(() -> {
+                                    writeToInfoLabel(finalCurrentOperation, finalSumOperation, thrustCurrent, finalFirstPartTime,
+                                            finalFirstPartAngle, finalSecondPartTime, finalSecondPartAngle);
+
+                                });
+
+
+                            }
+                        }
+                    }
+                }
+            }
+        }).start();
     }
 
     private boolean initDataIsTrue() {
-        log.info("Началась валидация");
+
         List<String> errorList = new ArrayList<>();
 
-
         try {
-            log.info("Проверка массы");
             double mass = Double.valueOf(textFieldMass.getText());
-            log.info("Проверка массы прошла успешно");
+
             if(mass <= 0) {
                 errorList.add("Масса КА: масса должна быть больше 0");
             }
@@ -96,9 +230,9 @@ public class SolutionSearchAlgorithm {
         }
 
         try {
-            double from = Double.valueOf(textFieldFirstPartAngleFrom.getText());
-            double to = Double.valueOf(textFieldFirstPartAngleTo.getText());
-            double step = Double.valueOf(textFieldFirstPartAngleStep.getText());
+            int from = Integer.valueOf(textFieldFirstPartAngleFrom.getText());
+            int to = Integer.valueOf(textFieldFirstPartAngleTo.getText());
+            int step = Integer.valueOf(textFieldFirstPartAngleStep.getText());
 
             if(from > to) {
                 errorList.add("Диапазон угла тяги (Первый участок): значение в поле <от> должно быть меньше <до>");
@@ -128,9 +262,9 @@ public class SolutionSearchAlgorithm {
         }
 
         try {
-            double from = Double.valueOf(textFieldSecondPartAngleFrom.getText());
-            double to = Double.valueOf(textFieldSecondPartAngleTo.getText());
-            double step = Double.valueOf(textFieldSecondPartAngleStep.getText());
+            int from = Integer.valueOf(textFieldSecondPartAngleFrom.getText());
+            int to = Integer.valueOf(textFieldSecondPartAngleTo.getText());
+            int step = Integer.valueOf(textFieldSecondPartAngleStep.getText());
 
             if(from > to) {
                 errorList.add("Диапазон угла тяги (Второй участок): значение в поле <от> должно быть меньше <до>");
@@ -171,8 +305,20 @@ public class SolutionSearchAlgorithm {
         return true;
     }
 
+    private void writeToInfoLabel(int currentOperation, int sumOperations, double currentThrust, int firstPartDuration, double firstPartAngle,
+                                  int secondPartDuration, double secondPartAngle) {
+        int percent = (int) ((currentOperation / sumOperations) * 100);
+        labelInfo.setText("Выполнено " + currentOperation + " операций из " + sumOperations + ". "
+                + "Поиск завершён на " + percent + " \n"
+                + "Тяга двигателя " + currentThrust + " \n"
+                + "Сейчас рассматривается " + firstPartDuration + " " + secondPartDuration + " " + firstPartAngle + " " + secondPartAngle);
+    }
+
     @FXML
-    private TextArea textAreaResultLog;
+    TextArea textAreaResultLog;
+
+    @FXML
+    Label labelInfo;
 
     @FXML
     Button buttonStartCalculate;
@@ -214,23 +360,23 @@ public class SolutionSearchAlgorithm {
     TextField textFieldFirstPartAngleStep;
 
     @FXML
-    private TextField textFieldSecondPartTimeFrom;
+    TextField textFieldSecondPartTimeFrom;
 
     @FXML
-    private TextField textFieldSecondPartTimeTo;
+    TextField textFieldSecondPartTimeTo;
 
     @FXML
-    private TextField textFieldSecondPartTimeStep;
+    TextField textFieldSecondPartTimeStep;
 
     @FXML
-    private TextField textFieldSecondPartAngleFrom;
+    TextField textFieldSecondPartAngleFrom;
 
     @FXML
-    private TextField textFieldSecondPartAngleTo;
+    TextField textFieldSecondPartAngleTo;
 
     @FXML
-    private TextField textFieldSecondPartAngleStep;
+    TextField textFieldSecondPartAngleStep;
 
     @FXML
-    private TextField textFieldMinDistance;
+    TextField textFieldMinDistance;
 }

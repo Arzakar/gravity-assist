@@ -40,7 +40,7 @@ public class EarthToEarthTrajectory {
         this.angleAndTimeParameters = angleAndTimeParameters;
     }
 
-    public void calculateFullTrajectory(Point3D startEarthPosition, Point3D startSpacecraftPosition,
+    public void calculateTrajectory(Point3D startEarthPosition, Point3D startSpacecraftPosition,
                                         Vector3D startSpacecraftSpeed, TrajectoryVariables trajectoryVariables) {
         earth.setAcceleration(new Vector3D());
         earth.setSpeed(new Vector3D());

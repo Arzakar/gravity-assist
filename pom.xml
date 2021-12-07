@@ -53,7 +53,8 @@
                         <!-- Usage: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.klimashin.ApplicationMain</mainClass>
+                            <!--<mainClass>com.klimashin.ApplicationMain</mainClass> -->
+                            <mainClass>ru.klimashin.ballistic.App</mainClass>
                         </configuration>
                     </execution>
                 </executions>

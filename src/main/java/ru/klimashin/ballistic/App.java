@@ -4,19 +4,18 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import ru.klimashin.ballistic.controller.MainController;
-import ru.klimashin.ballistic.model.ModelParameters;
-import ru.klimashin.ballistic.model.Trajectory;
+import ru.klimashin.ballistic.controller.SolutionSearchAlgorithmController;
+import ru.klimashin.ballistic.model.calculator.ModelParameters;
+import ru.klimashin.ballistic.model.calculator.TrajectoryCalculator;
 import ru.klimashin.ballistic.model.entity.CelestialBody;
 import ru.klimashin.ballistic.model.entity.Engine;
 import ru.klimashin.ballistic.model.entity.Spacecraft;
-import ru.klimashin.ballistic.model.math.Point3D;
-import ru.klimashin.ballistic.model.math.Vector3D;
+import ru.klimashin.ballistic.model.util.math.Point3D;
+import ru.klimashin.ballistic.model.util.math.Vector3D;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,17 +30,9 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
     	
     	try {
-    		AnchorPane root = (AnchorPane)FXMLLoader.load(MainController.class.getResource("Main.fxml"));
+    		AnchorPane root = (AnchorPane) FXMLLoader.load(SolutionSearchAlgorithmController.class.getResource("SolutionSearchAlgorithm.fxml"));
     		Scene scene = new Scene(root,600,600);
-    		
-    		/*
-    		Canvas canvas = new Canvas(600,600);
-    		GraphicsContext gc = canvas.getGraphicsContext2D();
-    			
-    		draw(gc);
-    			
-    		root.getChildren().add(canvas);
-    		*/
+
     		stage.setScene(scene);
     		stage.show();
     			
@@ -49,19 +40,14 @@ public class App extends Application {
     	} catch(Exception e) {
     		e.printStackTrace();
     	}
-    	
-    	/*
-        scene = new Scene(loadFXML("Main"), 640, 480);
-        stage.setScene(scene);
-        stage.show();
-        */
+
     }
 
     private void draw(GraphicsContext gc) {
 		CelestialBody earth = CelestialBody.EARTH;
 		CelestialBody solar = CelestialBody.SOLAR;
 		
-		earth.setPosition(new Point3D(earth.getOrbitRaius(), 0, 0));
+		earth.setPosition(new Point3D(earth.getOrbitRadius(), 0, 0));
 		earth.setSpeed(new Vector3D(0, 29784.48, 0));
 		
 		Engine engine = new Engine("Р­Р Р”", 0.040);
@@ -70,7 +56,7 @@ public class App extends Application {
 		
 		ModelParameters mp = new ModelParameters(0, 60 * 86400, 130 * 86400, 100, Math.toRadians(-30), Math.toRadians(120));
 		
-		Trajectory trj = new Trajectory(mp, earth, solar, spacecraft);
+		TrajectoryCalculator trj = new TrajectoryCalculator(mp, earth, solar, spacecraft);
 		trj.startCalculate();
 		
 		List<Double> distance = new ArrayList<>();
@@ -86,7 +72,7 @@ public class App extends Application {
 		double centerX = gc.getCanvas().getWidth() / 2;
 		double centerY = gc.getCanvas().getHeight() / 2;
 		
-		double mk = (gc.getCanvas().getWidth() / 2) / (earth.getOrbitRaius() * 1.2);
+		double mk = (gc.getCanvas().getWidth() / 2) / (earth.getOrbitRadius() * 1.2);
 		
 		gc.setFill(Color.GREEN);
 		gc.setStroke(Color.GREEN);
