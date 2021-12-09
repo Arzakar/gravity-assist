@@ -1,7 +1,5 @@
 package ru.klimashin.ballistic.controller;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +16,6 @@ import ru.klimashin.ballistic.model.calculator.earthToEarth.Monitor;
 import ru.klimashin.ballistic.model.entity.CelestialBody;
 import ru.klimashin.ballistic.model.entity.Engine;
 import ru.klimashin.ballistic.model.entity.Spacecraft;
-import ru.klimashin.ballistic.model.util.GeneralFormulas;
 import ru.klimashin.ballistic.model.util.math.Point3D;
 import ru.klimashin.ballistic.model.util.math.Vector3D;
 
@@ -91,11 +88,12 @@ public class SolutionSearchAlgorithmController {
             protected Void call() throws Exception {
 
                 int completedIterations = 0;
+                List<ModelParameters> completedMp = new ArrayList<>();
 
                 CelestialBody earth = CelestialBody.EARTH;
                 CelestialBody solar = CelestialBody.SOLAR;
 
-                Engine engine = new Engine("Experimental Engine”", 0.190);
+                Engine engine = new Engine("Experimental Engine”", 0.100);
                 Spacecraft spacecraft = new Spacecraft("Experimental Spacecraft", mass, engine, 1, null, null, null);
 
                 ModelParameters mp = new ModelParameters(0, 100, 0, 0, 0, 0);
@@ -117,6 +115,7 @@ public class SolutionSearchAlgorithmController {
                                         mainProcess.wait();
                                     }
                                 }
+
                                 mp.setSecondThrustAngle(toRadians(secondPartAngle));
 
                                 earth.setPosition(new Point3D(earth.getOrbitRadius(), 0, 0));
@@ -129,16 +128,18 @@ public class SolutionSearchAlgorithmController {
                                 EarthToEarthTrajectory trj = new EarthToEarthTrajectory(mp, earth, solar, spacecraft);
                                 trj.startCalculate();
 
-                                List<Double> distance = new ArrayList<>();
-
-                                distance.addAll(trj.getDistancesToEarth());
+                                List<Double> distance = new ArrayList<>(trj.getDistancesToEarth());
                                 Collections.sort(distance);
 
                                 if (distance.get(0) < 60_000_000) {
-                                    StringBuilder result = new StringBuilder(String.format("%3d", firstPartDuration) + " " + String.format("%3d", secondPartDuration) + " " + String.format("%4d", firstPartAngle) + " " + String.format("%4d", secondPartAngle) + " " + String.format("%13.2f", distance.get(0)) + "\n");
+                                    StringBuilder result = new StringBuilder(String.format("%3d", firstPartDuration) + " "
+                                            + String.format("%3d", secondPartDuration) + " "
+                                            + String.format("%4d", firstPartAngle) + " "
+                                            + String.format("%4d", secondPartAngle) + " "
+                                            + String.format("%.2f", (distance.get(0)) / 1000) + "\n");
 
-                                    results.add(result);
-                                    textAreaResultLog.appendText(mp + " " + distance.get(0).toString() + "\n");
+                                    //results.add(result);
+                                    textAreaResultLog.appendText(result.toString());
                                 }
 
                                 completedIterations++;
@@ -184,12 +185,12 @@ public class SolutionSearchAlgorithmController {
                     synchronized (monitor) {
                         labelInfo.setText("Выполнено " + monitor.getCompletedIterations()
                                 + " операций из " + monitor.getSumOperations() + ". "
-                                + "Поиск завершён на " + percent + " \n");
-//                                +"Сейчас рассматривается "
-//                                + monitor.getFirstPartDuration() + " "
-//                                + monitor.getSecondPartDuration() + " "
-//                                + monitor.getFirstPartAngle() + " "
-//                                + monitor.getSecondPartAngle());
+                                + "Поиск завершён на " + percent + " \n"
+                                + "Сейчас рассматривается "
+                                + monitor.getFirstPartDuration() + " "
+                                + monitor.getSecondPartDuration() + " "
+                                + monitor.getFirstPartAngle() + " "
+                                + monitor.getSecondPartAngle());
                     }
                 });
                 try {

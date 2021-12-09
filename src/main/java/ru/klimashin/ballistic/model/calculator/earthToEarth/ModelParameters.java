@@ -12,6 +12,15 @@ import static ru.klimashin.ballistic.model.util.GeneralFormulas.secondsToDays;
 @AllArgsConstructor
 public class ModelParameters {
 
+	public ModelParameters(ModelParameters modelParameters) {
+		this.startTime = modelParameters.getStartTime();
+		this.deltaTime = modelParameters.deltaTime;
+		this.firstPartDuration = modelParameters.firstPartDuration;
+		this.secondPartDuration = modelParameters.secondPartDuration;
+		this.firstThrustAngle = modelParameters.firstThrustAngle;
+		this.secondThrustAngle = modelParameters.secondThrustAngle;
+	}
+
 	private int startTime;
 	private int deltaTime;
 
