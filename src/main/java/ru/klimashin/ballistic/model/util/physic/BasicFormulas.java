@@ -30,7 +30,7 @@ public class BasicFormulas implements FundamentalConstants {
 	}
 	
 	
-	public static Vector3D sumForce(List<Vector3D> forces) {
+	public static Vector3D sumForce(Vector3D...forces) {
 		return Vector3D.sumVectors(forces);
 	}
 	

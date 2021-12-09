@@ -22,7 +22,7 @@ public class Vector3D extends Basic3D {
 	
 	
 	
-	public static Vector3D sumVectors(List<Vector3D> vectors) {
+	public static Vector3D sumVectors(Vector3D...vectors) {
 		Vector3D resultVector = new Vector3D();
 		
 		for(Vector3D vector : vectors) {

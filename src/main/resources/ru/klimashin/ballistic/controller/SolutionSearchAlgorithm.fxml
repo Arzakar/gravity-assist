@@ -73,7 +73,7 @@
                   <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="30.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                      <children>
                         <Label text="от" />
-                        <TextField fx:id="textFieldSecondPartTimeFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0" text="0" />
+                        <TextField fx:id="textFieldSecondPartTimeFrom" alignment="CENTER_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="0" text="10" />
                         <Label text="до" />
                         <TextField fx:id="textFieldSecondPartTimeTo" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" prefWidth="60.0" promptText="180" text="180" />
                         <Label text="шаг" />
@@ -113,7 +113,7 @@
                   <TextField fx:id="textFieldSpacecraftPosition" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" promptText="180" text="180" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Label styleClass="label-dimension" text="град" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                   <Label text="Начальная скорость КА" GridPane.rowIndex="3" />
-                  <TextField fx:id="textFieldSpacecraftSpeed" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" promptText="29.887" text="29.784" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <TextField fx:id="textFieldSpacecraftSpeed" alignment="CENTER_RIGHT" minHeight="-Infinity" prefHeight="25.0" promptText="29.887" text="29.68448" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                   <Label styleClass="label-dimension" text="км/с" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                </children>
                <VBox.margin>

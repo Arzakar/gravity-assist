@@ -4,6 +4,8 @@ import lombok.*;
 import ru.klimashin.ballistic.model.util.math.Point3D;
 import ru.klimashin.ballistic.model.util.math.Vector3D;
 
+import static java.lang.Math.pow;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -12,8 +14,8 @@ public enum CelestialBody {
 	SOLAR(
 		"Солнце",
 		null,
-		1.9885 * Math.pow(10, 30),
-		1.32712440018 * Math.pow(10, 20),
+		1.9885 * pow(10, 30),
+		1.32712440018 * pow(10, 20),
 		null,
 		null,
 		null,
@@ -29,16 +31,16 @@ public enum CelestialBody {
 	EARTH(
 		"Земля",
 		null,
-		5.9722 * Math.pow(10, 24),
-		3.986004355 * Math.pow(10, 14),
-		1 * Math.pow(10, 9),
-		1.496 * Math.pow(10, 11),
+		5.9722 * pow(10, 24),
+		3.986004355 * pow(10, 14),
+		1 * pow(10, 9),
+		1.496 * pow(10, 11),
 		365.25 * 86400,
 		0d,
-		1.496 * Math.pow(10, 11),
-		1.496 * Math.pow(10, 11),
+		1.496 * pow(10, 11),
+		1.496 * pow(10, 11),
 		0d,
-		1.496 * Math.pow(10, 11),
+		1.496 * pow(10, 11),
 		null,
 		null,
 		null
