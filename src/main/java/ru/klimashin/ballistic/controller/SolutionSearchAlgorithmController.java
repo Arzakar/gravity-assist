@@ -1,8 +1,6 @@
 package ru.klimashin.ballistic.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -60,6 +58,8 @@ public class SolutionSearchAlgorithmController {
 
     Thread monitoringProcess;
     Monitor monitor = new Monitor();
+
+    HashSet<String> completeParameters = new HashSet<>();
 
     @FXML
     public void startSearch() {
@@ -122,6 +122,10 @@ public class SolutionSearchAlgorithmController {
                                     }
                                 }
 
+                                if(needBreak(firstPartDuration, secondPartDuration, firstPartAngle, secondPartAngle)) {
+                                    break;
+                                }
+
                                 mp.setSecondThrustAngle(toRadians(secondPartAngle));
 
                                 earth.setPosition(new Point3D(earth.getOrbitRadius(), 0, 0));
@@ -138,8 +142,12 @@ public class SolutionSearchAlgorithmController {
                                 Collections.sort(distance);
 
                                 if (distance.get(0) < 60_000_000) {
-                                    textAreaResultLog.appendText(parametersToResultLog(firstPartDuration,
-                                            secondPartDuration, firstPartAngle, secondPartAngle, distance.get(0)));
+                                    textAreaResultLog.appendText(parametersToResultLog(firstPartDuration, secondPartDuration,
+                                            firstPartAngle, secondPartAngle, distance.get(0)));
+
+                                    addAllCompleteParametersFromSecondPartDuration(firstPartDuration, secondPartDuration,
+                                            secondPartDurationTo, secondPartDurationStep, firstPartAngle, secondPartAngle,
+                                            distance.get(0));
                                 }
 
                                 completedIterations++;
@@ -155,6 +163,16 @@ public class SolutionSearchAlgorithmController {
         };
 
         new Thread(mainProcess).start();
+    }
+
+    private boolean needBreak(int firstPartDuration, int secondPartDuration, int firstPartAngle, int secondPartAngle) {
+        return completeParameters.stream().anyMatch((complete) -> {
+            complete = complete.substring(0, 18);
+            String currentParameters =
+                    parametersToResultLog(firstPartDuration, secondPartDuration, firstPartAngle, secondPartAngle, 0)
+                            .substring(0, 18);
+            return complete.equals(currentParameters);
+        });
     }
 
     private String headResultLog(Vector3D spacecraftSpeed, Point3D spacecraftPosition, double mass) {
@@ -183,6 +201,15 @@ public class SolutionSearchAlgorithmController {
             monitor.setSecondPartDuration(secondPartDuration);
             monitor.setFirstPartAngle(firstPartAngle);
             monitor.setSecondPartAngle(secondPartAngle);
+        }
+    }
+
+    private void addAllCompleteParametersFromSecondPartDuration(int firstPartDuration, int secondPartDuration,
+                                                                int secondPartDurationTo, int secondPartDurationStep,
+                                                                int firstPartAngle, int secondPartAngle, double distance) {
+        for(int spd = secondPartDuration; spd <= secondPartDurationTo; spd += secondPartDurationStep) {
+            completeParameters.add(parametersToResultLog(firstPartDuration, spd,
+                    firstPartAngle, secondPartAngle, distance));
         }
     }
 
