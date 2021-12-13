@@ -17,7 +17,7 @@
    <children>
       <VBox layoutX="64.0" layoutY="66.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
-            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="label-head" text="Парметры рассчёта">
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="label-head" text="Парметры расчёта">
                <font>
                   <Font name="System Bold" size="18.0" />
                </font></Label>

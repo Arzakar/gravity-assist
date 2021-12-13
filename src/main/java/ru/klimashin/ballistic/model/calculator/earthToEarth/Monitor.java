@@ -2,6 +2,8 @@ package ru.klimashin.ballistic.model.calculator.earthToEarth;
 
 import lombok.Data;
 
+import java.time.LocalTime;
+
 @Data
 public class Monitor {
 
@@ -11,5 +13,6 @@ public class Monitor {
     private int secondPartDuration;
     private double firstPartAngle;
     private double secondPartAngle;
-
+    private LocalTime startTime;
+    private LocalTime currentTime;
 }
