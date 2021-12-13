@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.klimashin.model.entity.celestial.Earth;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import lombok.extern.java.Log;
 import ru.klimashin.ballistic.model.calculator.earthToEarth.ModelParameters;
 import ru.klimashin.ballistic.model.calculator.earthToEarth.EarthToEarthTrajectory;
@@ -20,7 +23,7 @@ import ru.klimashin.ballistic.model.util.math.Point3D;
 import ru.klimashin.ballistic.model.util.math.Vector3D;
 
 import static java.lang.Math.toRadians;
-import static ru.klimashin.ballistic.model.util.GeneralFormulas.daysToSeconds;
+import static ru.klimashin.ballistic.model.util.GeneralFormulas.*;
 
 @Log
 public class SolutionSearchAlgorithmController {
@@ -88,17 +91,20 @@ public class SolutionSearchAlgorithmController {
             protected Void call() throws Exception {
 
                 int completedIterations = 0;
-                List<ModelParameters> completedMp = new ArrayList<>();
 
                 CelestialBody earth = CelestialBody.EARTH;
+                earth.setPosition(new Point3D(earth.getOrbitRadius(), 0, 0));
+
                 CelestialBody solar = CelestialBody.SOLAR;
 
                 Engine engine = new Engine("Experimental Engine”", 0.100);
+
                 Spacecraft spacecraft = new Spacecraft("Experimental Spacecraft", mass, engine, 1, null, null, null);
+                spacecraft.setSpeed(new Vector3D(0, 29684.48, 0));
+                spacecraft.setPosition(new Point3D(earth.getPosition().minus(new Point3D(earth.getGravitationalRadius(), 0, 0))));
+                textAreaResultLog.appendText(headResultLog(spacecraft.getSpeed(), spacecraft.getPosition(), spacecraft.getMass()));
 
                 ModelParameters mp = new ModelParameters(0, 100, 0, 0, 0, 0);
-
-                List<StringBuilder> results = new ArrayList<>();
 
                 for (int firstPartDuration = firstPartDurationFrom; firstPartDuration <= firstPartDurationTo; firstPartDuration += firstPartDurationStep) {
                     mp.setFirstPartDuration(daysToSeconds(firstPartDuration));
@@ -132,24 +138,13 @@ public class SolutionSearchAlgorithmController {
                                 Collections.sort(distance);
 
                                 if (distance.get(0) < 60_000_000) {
-                                    StringBuilder result = new StringBuilder(String.format("%3d", firstPartDuration) + " "
-                                            + String.format("%3d", secondPartDuration) + " "
-                                            + String.format("%4d", firstPartAngle) + " "
-                                            + String.format("%4d", secondPartAngle) + " "
-                                            + String.format("%.2f", (distance.get(0)) / 1000) + "\n");
-
-                                    //results.add(result);
-                                    textAreaResultLog.appendText(result.toString());
+                                    textAreaResultLog.appendText(parametersToResultLog(firstPartDuration,
+                                            secondPartDuration, firstPartAngle, secondPartAngle, distance.get(0)));
                                 }
 
                                 completedIterations++;
-                                synchronized (monitor) {
-                                    monitor.setCompletedIterations(completedIterations);
-                                    monitor.setFirstPartDuration(firstPartDuration);
-                                    monitor.setSecondPartDuration(secondPartDuration);
-                                    monitor.setFirstPartAngle(firstPartAngle);
-                                    monitor.setSecondPartAngle(secondPartAngle);
-                                }
+                                writeToMonitor(completedIterations, firstPartDuration, secondPartDuration,
+                                        firstPartAngle, secondPartAngle);
                             }
                         }
                     }
@@ -162,17 +157,48 @@ public class SolutionSearchAlgorithmController {
         new Thread(mainProcess).start();
     }
 
+    private String headResultLog(Vector3D spacecraftSpeed, Point3D spacecraftPosition, double mass) {
+        return "Cкорость космического аппарата: " + String.format("%.2f", spacecraftSpeed.getScalar()) + "\n"
+                + "Поцизия космического аппарата: " + "\n"
+                + "X: " + String.format("%.2f", mToKm(spacecraftPosition.getX())) + "\n"
+                + "Y: " + String.format("%.2f", mToKm(spacecraftPosition.getY())) + "\n"
+                + "Z: " + String.format("%.2f", mToKm(spacecraftPosition.getZ())) + "\n"
+                + "Масса космического аппарата: " + String.format("%.2f", mass) + "\n\n";
+    }
+
+    private String parametersToResultLog(int firstPartDuration, int secondPartDuration,
+                                         int firstPartAngle, int secondPartAngle, double distance) {
+        return String.format("%4d", firstPartDuration) + " "
+                + String.format("%4d", secondPartDuration) + " "
+                + String.format("%5d", firstPartAngle) + " "
+                + String.format("%5d", secondPartAngle) + " "
+                + String.format("%10.2f", mToKm(distance)) + "\n";
+    }
+
+    private void writeToMonitor(int completedIterations, int firstPartDuration, int secondPartDuration,
+                                int firstPartAngle, int secondPartAngle) {
+        synchronized (monitor) {
+            monitor.setCompletedIterations(completedIterations);
+            monitor.setFirstPartDuration(firstPartDuration);
+            monitor.setSecondPartDuration(secondPartDuration);
+            monitor.setFirstPartAngle(firstPartAngle);
+            monitor.setSecondPartAngle(secondPartAngle);
+        }
+    }
+
     private void turnMainProcess() {
         synchronized (mainProcess) {
-            if (mainProcess != null && !mainProcessWaitFlag) {
-                mainProcessWaitFlag = true;
-                buttonStartCalculate.setText("Возобновить");
-                log.info("Главнвый процесс приостановлен");
-            } else {
-                mainProcessWaitFlag = false;
-                mainProcess.notify();
-                buttonStartCalculate.setText("Приостановить");
-                log.info("Гланвый процесс возобновлён");
+            if (mainProcess != null) {
+                if(!mainProcessWaitFlag) {
+                    mainProcessWaitFlag = true;
+                    buttonStartCalculate.setText("Возобновить");
+                    log.info("Главнвый процесс приостановлен");
+                } else {
+                    mainProcessWaitFlag = false;
+                    mainProcess.notify();
+                    buttonStartCalculate.setText("Приостановить");
+                    log.info("Гланвый процесс возобновлён");
+                }
             }
         }
     }
@@ -209,7 +235,7 @@ public class SolutionSearchAlgorithmController {
         List<String> errorList = new ArrayList<>();
 
         try {
-            mass = Double.valueOf(textFieldMass.getText());
+            mass = Double.parseDouble(textFieldMass.getText());
 
             if (mass <= 0) {
                 errorList.add("Масса КА: масса должна быть больше 0");
@@ -219,9 +245,9 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            thrustFrom = Double.valueOf(textFieldThrustFrom.getText());
-            thrustTo = Double.valueOf(textFieldThrustTo.getText());
-            thrustStep = Double.valueOf(textFieldThrustStep.getText());
+            thrustFrom = Double.parseDouble(textFieldThrustFrom.getText());
+            thrustTo = Double.parseDouble(textFieldThrustTo.getText());
+            thrustStep = Double.parseDouble(textFieldThrustStep.getText());
 
             if (thrustFrom > thrustTo) {
                 errorList.add("Диапазон тяги двигателя: значение в поле <от> должно быть меньше <до>");
@@ -235,7 +261,7 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            spacecraftDegreePosition = Double.valueOf(textFieldSpacecraftPosition.getText());
+            spacecraftDegreePosition = Double.parseDouble(textFieldSpacecraftPosition.getText());
 
             if (spacecraftDegreePosition < 0 | spacecraftDegreePosition > 359) {
                 errorList.add("Позиция старта КА: значение угла должно быть в диапазоне 0...359");
@@ -245,15 +271,15 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            spacecraftStartSpeed = Double.valueOf(textFieldSpacecraftSpeed.getText());
+            spacecraftStartSpeed = kmToM(Double.parseDouble(textFieldSpacecraftSpeed.getText()));
         } catch (NumberFormatException ex) {
             errorList.add("Начальная скорость КА");
         }
 
         try {
-            firstPartDurationFrom = Integer.valueOf(textFieldFirstPartTimeFrom.getText());
-            firstPartDurationTo = Integer.valueOf(textFieldFirstPartTimeTo.getText());
-            firstPartDurationStep = Integer.valueOf(textFieldFirstPartTimeStep.getText());
+            firstPartDurationFrom = Integer.parseInt(textFieldFirstPartTimeFrom.getText());
+            firstPartDurationTo = Integer.parseInt(textFieldFirstPartTimeTo.getText());
+            firstPartDurationStep = Integer.parseInt(textFieldFirstPartTimeStep.getText());
 
             if (firstPartDurationFrom > firstPartDurationTo) {
                 errorList.add("Диапазон длительности (Первый участок): значение в поле <от> должно быть меньше <до>");
@@ -267,9 +293,9 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            firstPartThrustAngleFrom = Integer.valueOf(textFieldFirstPartAngleFrom.getText());
-            firstPartThrustAngleTo = Integer.valueOf(textFieldFirstPartAngleTo.getText());
-            firstPartThrustAngleStep = Integer.valueOf(textFieldFirstPartAngleStep.getText());
+            firstPartThrustAngleFrom = Integer.parseInt(textFieldFirstPartAngleFrom.getText());
+            firstPartThrustAngleTo = Integer.parseInt(textFieldFirstPartAngleTo.getText());
+            firstPartThrustAngleStep = Integer.parseInt(textFieldFirstPartAngleStep.getText());
 
             if (firstPartThrustAngleFrom > firstPartThrustAngleTo) {
                 errorList.add("Диапазон угла тяги (Первый участок): значение в поле <от> должно быть меньше <до>");
@@ -283,9 +309,9 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            secondPartDurationFrom = Integer.valueOf(textFieldSecondPartTimeFrom.getText());
-            secondPartDurationTo = Integer.valueOf(textFieldSecondPartTimeTo.getText());
-            secondPartDurationStep = Integer.valueOf(textFieldSecondPartTimeStep.getText());
+            secondPartDurationFrom = Integer.parseInt(textFieldSecondPartTimeFrom.getText());
+            secondPartDurationTo = Integer.parseInt(textFieldSecondPartTimeTo.getText());
+            secondPartDurationStep = Integer.parseInt(textFieldSecondPartTimeStep.getText());
 
             if (secondPartDurationFrom > secondPartDurationTo) {
                 errorList.add("Диапазон длительности (Второй участок): значение в поле <от> должно быть меньше <до>");
@@ -299,9 +325,9 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            secondPartThrustAngleFrom = Integer.valueOf(textFieldSecondPartAngleFrom.getText());
-            secondPartThrustAngleTo = Integer.valueOf(textFieldSecondPartAngleTo.getText());
-            secondPartThrustAngleStep = Integer.valueOf(textFieldSecondPartAngleStep.getText());
+            secondPartThrustAngleFrom = Integer.parseInt(textFieldSecondPartAngleFrom.getText());
+            secondPartThrustAngleTo = Integer.parseInt(textFieldSecondPartAngleTo.getText());
+            secondPartThrustAngleStep = Integer.parseInt(textFieldSecondPartAngleStep.getText());
 
             if (secondPartThrustAngleFrom > secondPartThrustAngleTo) {
                 errorList.add("Диапазон угла тяги (Второй участок): значение в поле <от> должно быть меньше <до>");
@@ -315,9 +341,9 @@ public class SolutionSearchAlgorithmController {
         }
 
         try {
-            minDistance = Double.valueOf(textFieldMinDistance.getText());
+            minDistance = kmToM(Double.parseDouble(textFieldMinDistance.getText()));
 
-            Earth earth = new Earth();
+            CelestialBody earth = CelestialBody.EARTH;
             if (minDistance <= 0 | minDistance <= earth.getRadius()) {
                 errorList.add("Мин. сближение с Землёй: должно быть больше радиуса Земли");
             }
@@ -325,16 +351,16 @@ public class SolutionSearchAlgorithmController {
             errorList.add("Мин. сближение с Землёй");
         }
 
-        String errorMessage = "Следующие поля заполненены неправильно: \n";
+        StringBuilder errorMessage = new StringBuilder("Следующие поля заполненены неправильно: \n");
         for (String s : errorList) {
-            errorMessage += "   - " + s + "\n";
+            errorMessage.append(" - " + s + "\n");
         }
 
         if (!errorList.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Ошибка ввода данных");
             alert.setHeaderText(null);
-            alert.setContentText(errorMessage);
+            alert.setContentText(errorMessage.toString());
             alert.showAndWait();
             return false;
         }

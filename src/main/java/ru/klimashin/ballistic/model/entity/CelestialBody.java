@@ -30,7 +30,7 @@ public enum CelestialBody {
 
 	EARTH(
 		"Земля",
-		null,
+		6371_000d,
 		5.9722 * pow(10, 24),
 		3.986004355 * pow(10, 14),
 		1 * pow(10, 9),
