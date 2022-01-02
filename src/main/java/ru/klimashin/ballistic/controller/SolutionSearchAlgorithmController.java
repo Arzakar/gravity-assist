@@ -1,10 +1,9 @@
 package ru.klimashin.ballistic.controller;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -100,6 +99,8 @@ public class SolutionSearchAlgorithmController {
             @Override
             protected Void call() throws Exception {
 
+                String fileName = LocalDate.now() + "-" + "spd-" + spacecraftStartSpeed + ".txt";
+
                 int completedIterations = 0;
 
                 CelestialBody earth = CelestialBody.EARTH;
@@ -110,14 +111,22 @@ public class SolutionSearchAlgorithmController {
                 Spacecraft spacecraft = new Spacecraft("Experimental Spacecraft", mass, null, 1, null, null, null);
                 spacecraft.setSpeed(new Vector3D(0, spacecraftStartSpeed, 0));
                 spacecraft.setPosition(new Point3D(earth.getPosition().minus(new Point3D(earth.getGravitationalRadius(), 0, 0))));
-                textAreaResultLog.appendText(headResultLog(spacecraft.getSpeed(), spacecraft.getPosition(), spacecraft.getMass()));
+
+                String headResulLog = headResultLog(spacecraft.getSpeed(), spacecraft.getPosition(), spacecraft.getMass());
+                textAreaResultLog.appendText(headResulLog);
+                writeToFile(fileName, headResulLog);
 
                 ModelParameters mp = new ModelParameters(0, 100, 0, 0, 0, 0);
 
-                for (double currentThrust = thrustFrom; currentThrust <= thrustTo; currentThrust += thrustStep) {
+                for (double currentThrust = thrustFrom; currentThrust <= thrustTo+0.005; currentThrust += thrustStep) {
                     Engine engine = new Engine("Experimental Engine”", currentThrust);
                     spacecraft.setEngine(engine);
-                    textAreaResultLog.appendText(thrustToResultLog(currentThrust));
+
+                    String thrustToResultLog = thrustToResultLog(currentThrust);
+                    textAreaResultLog.appendText(thrustToResultLog);
+                    writeToFile(fileName, thrustToResultLog);
+
+                    completeParameters.clear();
 
                     for (int firstPartDuration = firstPartDurationFrom; firstPartDuration <= firstPartDurationTo; firstPartDuration += firstPartDurationStep) {
                         mp.setFirstPartDuration(daysToSeconds(firstPartDuration));
@@ -138,14 +147,14 @@ public class SolutionSearchAlgorithmController {
                                             mainProcess.wait();
                                         }
                                     }
-
+                                    /*
                                     if(needBreak(firstPartDuration, secondPartDuration, firstPartAngle, secondPartAngle)) {
                                         completedIterations++;
                                         writeToMonitor(completedIterations, firstPartDuration, secondPartDuration,
                                                 firstPartAngle, secondPartAngle, LocalTime.now());
                                         break;
                                     }
-
+                                    */
                                     mp.setSecondThrustAngle(toRadians(secondPartAngle));
 
                                     earth.setPosition(new Point3D(earth.getOrbitRadius(), 0, 0));
@@ -162,8 +171,10 @@ public class SolutionSearchAlgorithmController {
                                     Collections.sort(distance);
 
                                     if (distance.get(0) < minDistance) {
-                                        textAreaResultLog.appendText(parametersToResultLog(firstPartDuration, secondPartDuration,
-                                                firstPartAngle, secondPartAngle, distance.get(0)));
+                                        String parametersToResultLog = parametersToResultLog(firstPartDuration, secondPartDuration,
+                                                firstPartAngle, secondPartAngle, distance.get(0));
+                                        textAreaResultLog.appendText(parametersToResultLog);
+                                        writeToFile(fileName, parametersToResultLog);
 
                                         addAllCompleteParametersFromSecondPartDuration(firstPartDuration, secondPartDuration,
                                                 secondPartDurationTo, secondPartDurationStep, firstPartAngle, secondPartAngle,
@@ -287,6 +298,14 @@ public class SolutionSearchAlgorithmController {
         monitoringProcess.start();
     }
 
+
+    private void writeToFile(String fileName, String text) {
+        try(FileOutputStream fos = new FileOutputStream(fileName, true)) {
+            fos.write(text.getBytes());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 
 
     private boolean initDataIsTrue() {
